@@ -40,7 +40,7 @@ dir <- "~/Documents/varie/Rladies/twitter_workshop"
 
 # Set up a twitter API to get started with twitter
 
-Before you can download data from Twitter's data you need to setup your API by becoming a Twitter developer. First, to become a twitter developer you need to have a twitter account. Then, you can sign up [here](https://dev.twitter.com/resources/signup) (Figure \ref{fig:fig1}). Once you have signed up click on the *My Apps* buttom on the left panel as in Figure \ref{fig:fig2} and then click on *Create a new app*. You should provide a brief description about your App and a few other details. For today's workshop we set up the the *RLadies* App shown in Figure \ref{fig:fig3}. By clicking onto your App's name you can now manage and see your settings as well as the codes that you need to get started with R. You can find the keys that you need in the *Keys and Access Tokens* button. Here you can find your four codes (highlighted in Figure \ref{fig:fig4}) to use into R. 
+Before you can download data from Twitter, you need to setup your API by becoming a Twitter developer. First, to become a Twitter developer you need to have a Twitter account. Then, you can sign up [here](https://dev.twitter.com/resources/signup) (Figure \ref{fig:fig1}). Once you have signed up click on the *My Apps* buttom on the left panel as in Figure \ref{fig:fig2} and then click on *Create a new app*. You should provide a brief description about your App and a few other details. For today's workshop we set up the the *RLadies* App shown in Figure \ref{fig:fig3}. By clicking onto your App's name you can now manage and see your settings as well as the codes that you need to get started with R. You can find the keys that you need in the *Keys and Access Tokens* button. Here you can find your four codes (highlighted in Figure \ref{fig:fig4}) to use into R. 
 
 ```{r echo = FALSE, fig.cap="\\label{fig:fig1}Signup at https://dev.twitter.com/resources/signup.", fig.width=5, fig.height=5}
 img <- readPNG(file.path(dir,"Figures","signup1.png"))
@@ -117,7 +117,7 @@ require("ggplot2")
 require("plotly")
 ```
 
-Then setup your *access keys* as below. If you don't remember where to find these codes see Figure\\label{fig:fig4}).
+Then setup your *access keys* as below. If you don't remember where to find these codes see Figure \ref{fig:fig1}).
 
 ```{r eval = FALSE}
 api_key<-'yourAPIKey'
@@ -201,7 +201,7 @@ April 29th is the first day of our sets of tweets with a higher frequency of twe
 
 ### User's information
 
-Another functionlaity of *tweetR* is to download the information about the users that wrote the the tweets. This can be done with the functions *getUser()* and for multiple lookups with *lookupUsers()* and . Of course, you are able to access user's information according to the user's permission. Therefore, you normally expect a lot of missing or fake data! The search can be done by providing on of *screenNames* or *userIDs*.
+Another functionality of *twitteR* is to download the information about the users that wrote the the tweets. This can be done with the functions *getUser()* and for multiple lookups with *lookupUsers()* and . Of course, you are able to access user's information according to the user's permission. Therefore, you normally expect a lot of missing or fake data! The search can be done by providing on of *screenNames* or *userIDs*.
 
 ```{r }
 head(combineTweets[,c("id","screenName")])
@@ -271,7 +271,7 @@ combine_data <- read.csv(file.path(dir,"Data","Users_infos_and_tweets.csv"), str
 # Separate their queen name into their components
 queens <- queens %>% 
   tidyr::separate(Queen.Name, into = c("Queen1","Queen2","Queen3"), sep = " ", remove = FALSE)
-head(queens[,c("Queen1","Queen2","Queen3")])
+head(queens[,c("Queen1","Queen2","Queen3","Twitter.Name")])
 
 # Wrapper function that creates a vector of key names for every queen
 queen_vector <- function(x){
