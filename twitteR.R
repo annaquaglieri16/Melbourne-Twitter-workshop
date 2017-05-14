@@ -8,7 +8,7 @@
 # Set working directory
 ########################
 
-dir <- "./Rladies/twitter_workshop"
+dir <- "./R-Ladies-master"
 
 ###############
 # Load packages
@@ -25,37 +25,7 @@ lapply(list.of.packages, require, character.only = TRUE)
 # Load data previously created
 ##############################
 
-# Data as they are output by the twitteR::searchTwitter() function
-twitter_rpdr9_1 <- readRDS(file.path(dir,"Data","twitter_rpdr9.rds"))
-twitter_rpdr9_2 <- readRDS(file.path(dir,"Data","twitter_rpdr9_2.rds"))
-twitter_rpdr <- readRDS(file.path(dir,"Data","twitter_rupoldragrace.rds"))
-class(twitter_rpdr9_1)
-
-# Convert the lists to data.frames and define a column to specify the hastags searched
-toDF_rupol_1 <- twitteR::twListToDF(twitter_rpdr9_1)
-toDF_rupol_2 <- twitteR::twListToDF(twitter_rpdr9_2)
-toDF_rupol_3 <- twitteR::twListToDF(twitter_rpdr)
-
-# Time interval of the tweets dates 
-# Set 1
-min(toDF_rupol_1$created)
-max(toDF_rupol_1$created)
-# Set 2
-min(toDF_rupol_2$created)
-max(toDF_rupol_2$created)
-# Set 3
-min(toDF_rupol_3$created)
-max(toDF_rupol_3$created)
-# There is a two days overlap between the sets
-
-# Combine the data.frame and remove duplicated tweets
-combineTweetsDupl <- rbind(toDF_rupol_1,toDF_rupol_2,toDF_rupol_3) 
-duplicatedRows <- duplicated(combineTweetsDupl)
-sum(duplicatedRows)
-combineTweets <- combineTweetsDupl[!duplicatedRows, ]
-sum(duplicated(combineTweets))
-
-head(combineTweets)
+combineTweets <- read.csv(file.path(dir,"Data","tweets_hastags_combined.csv"),stringsAsFactors = FALSE)
 
 #################################
 # Plot the number of daily tweets
@@ -237,3 +207,5 @@ ggplot(combine_sentiment, aes(x = queen_name, fill = sentiment)) +
 geom_bar(stat = "count", position = "fill") + coord_flip()
 
 # 5. Which other question can be asked?
+
+

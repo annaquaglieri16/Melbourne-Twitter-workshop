@@ -1,6 +1,6 @@
 ---
 title: "R-Ladies Melbourne - Twitter Workshop"
-author: "Anna Qualieri & Saskia Freytag"
+author: "Anna Quaglieri & Saskia Freytag"
 output:
   pdf_document:
     fig_caption: yes
@@ -32,7 +32,7 @@ knitr::opts_chunk$set(fig.width=8, fig.height=6, echo=T, warning=FALSE, message=
 
 require("png")
 require("grid")
-dir <- "/Users/quaglieri.a/Documents/varie/Rladies/twitter_workshop"
+dir <- "~/Documents/varie/Rladies/twitter_workshop"
 
 ```
 
@@ -180,12 +180,14 @@ sum(duplicatedRows)
 combineTweets <- combineTweetsDupl[!duplicatedRows, ]
 sum(duplicated(combineTweets))
 
-head(combineTweets)
+colnames(combineTweets)
+# save to file
+write.csv(combineTweets,file.path(dir,"Data","tweets_hastags_combined.csv"),row.names = FALSE)
 ```
 
 With the help of [tidyr](https://cran.r-project.org/web/packages/tidyr/index.html) we can reorganise and manipulate the dataset. For example, we can plot the number of tweets per day.
 
-```{r }
+```{r fig.cap="Total number of tweets per day"}
 toDF_rupol_daily <- combineTweets %>% tidyr::separate(created, into = c("Day","Time"), sep = " ") %>%
 			dplyr::group_by(Day) %>% 
 			dplyr::summarise(tweetsPerDay = length(text)) %>%
@@ -302,7 +304,7 @@ freq_mention_DayToDF$queen_name <- rep(names(freq_mention_Day), times = number_m
 
 Now we can plot the number of time a queen was mentioned in a tweet every day.
 
-```{r}
+```{r fig.cap="Total number of times that a queen was mentioned in a tweet."}
 dailyMention <- freq_mention_DayToDF %>% dplyr::group_by(Day, queen_name) %>% 
   dplyr::summarise(Nmention = length(text)) %>%
   ggplot(aes(x = Day, y = Nmention, colour = queen_name, group = queen_name)) + 
@@ -321,7 +323,7 @@ dailyMention
 
 The answer is in the retweets!
 
-```{r}
+```{r fig.cap="Number of retweets by number of unique tweets where a queen was mentioned per day."}
 retweets <- freq_mention_DayToDF %>% dplyr::group_by(Day, queen_name) %>%
   dplyr::summarise(NUniqueTweet = length(unique(text)), Nretweet = sum(isRetweet)) %>%
   ggplot(aes(x = NUniqueTweet, y = Nretweet, colour = queen_name)) + geom_point() + theme_bw()
@@ -365,7 +367,7 @@ dm = data.frame(word=names(word_freqs), freq = word_freqs)
 
 Before plotting the word cloud it is always useful to check and maybe remove the first few words of the list which are probably going to be excpected words, like the hastags that we used for the search. 
 
-```{r}
+```{r fig.cap="Wordcloud of the top 100 words for the tweets where @atlsexyxlim was mentioned."}
 head(dm)
 dm <- dm[-(1:5),]
 # Plot the word cloud
@@ -437,6 +439,3 @@ ggplot(combine_sentiment, aes(x = queen_name, fill = sentiment)) +
 geom_bar(stat = "count", position = "fill") + coord_flip()
 ```
 
-\clearpage
-
-### Which other question can be asked?
