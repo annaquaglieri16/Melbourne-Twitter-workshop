@@ -1,11 +1,7 @@
 ---
-title: "R-Ladies Melbourne - Twitter"
-author: "Anna Qualieri & Saskia Freitag"
-date: <`r format(Sys.time(), "%d %B, %Y")`>
+title: "R-Ladies Melbourne - Twitter Workshop"
+author: "Anna Qualieri & Saskia Freytag"
 output:
-  html_document:
-    toc: yes
-    toc_depth: '4'
   pdf_document:
     fig_caption: yes
     fig_height: 6
@@ -14,37 +10,100 @@ output:
     number_sections: yes
     toc: yes
     toc_depth: 4
+    df_print: kable
+  html_document:
+    toc: yes
+    fig_caption: yes
+    number_sections: yes
+    toc_depth: '4'
+urlcolor: magenta
+linkcolor: magenta
 ---
 
 
-```{r echo = FALSE}
-# Chunk options
-knitr::opts_chunk$set(fig.width=8, fig.height=6, echo=T, warning=FALSE, message=FALSE,prompt=T,tidy=T,include=TRUE,cache=FALSE)
+```{r echo = FALSE, eval = FALSE}
+install.packages("png")
+install.packages("grid")
+```
 
-dir <- "~/Documents/varie/Combine_tutorial"
+```{r echo = FALSE, message=FALSE}
+# Chunk options
+knitr::opts_chunk$set(fig.width=8, fig.height=6, echo=T, warning=FALSE, message=FALSE,prompt=T,tidy=T,tidy.opts=list(width.cutoff=40),include=TRUE,cache=FALSE)
+
+require("png")
+require("grid")
+dir <- "/Users/quaglieri.a/Documents/varie/Rladies/twitter_workshop"
 
 ```
 
+\clearpage
+
 # Set up a twitter API to get started with twitter
 
-Before you can download data from Twitter's data you need to setup your API. First sign up [here](https://dev.twitter.com/resources/signup). Then ... to be continued - maybe some screenshots
+Before you can download data from Twitter's data you need to setup your API by becoming a Twitter developer. First, to become a twitter developer you need to have a twitter account. Then, you can sign up [here](https://dev.twitter.com/resources/signup) (Figure \ref{fig:fig1}). Once you have signed up click on the *My Apps* buttom on the left panel as in Figure \ref{fig:fig2} and then click on *Create a new app*. You should provide a brief description about your App and a few other details. For today's workshop we set up the the *RLadies* App shown in Figure \ref{fig:fig3}. By clicking onto your App's name you can now manage and see your settings as well as the codes that you need to get started with R. You can find the keys that you need in the *Keys and Access Tokens* button. Here you can find your four codes (highlighted in Figure \ref{fig:fig4}) to use into R. 
 
-```{r}
+```{r echo = FALSE, fig.cap="\\label{fig:fig1}Signup at https://dev.twitter.com/resources/signup.", fig.width=5, fig.height=5}
+img <- readPNG(file.path(dir,"Figures","signup1.png"))
+grid.raster(img)
+```
 
-# rupols hastags
+```{r echo = FALSE, fig.cap="\\label{fig:fig2}After signing up click on 'My Apps' and then 'Create a new App's.", fig.width=5, fig.height=5}
+img <- readPNG(file.path(dir,"Figures","signup2.png"))
+grid.raster(img)
+```
 
-https://top-hashtags.com/hashtag/rupaul/
+```{r echo = FALSE, fig.cap="\\label{fig:fig3}You can now manage your App's settings.", fig.width=5, fig.height=5}
+img <- readPNG(file.path(dir,"Figures","twitter_apps.png"))
+grid.raster(img)
+```
 
-# twitter setup
+```{r echo = FALSE, fig.cap="\\label{fig:fig4}This is where you can find the access keys that you need to get started with R.", fig.width=5, fig.height=5}
+img <- readPNG(file.path(dir,"Figures","APIs_tokens.png"))
+grid.raster(img)
+```
+
+\clearpage
+
+# Let's get started with RuPaul's drag race's tweets!
+
+RuPaul's drag race is an American reality competitions showing RuPaul's search for "America's next drag superstar". Just to tease your curiosity, Figure \ref{fig:fig5} shows you all the Queens which are competing in Season 9!
+
+```{r echo = FALSE, fig.cap="\\label{fig:fig5}Drag queens competing in RuPaul's drag race Season 9.", fig.width=6, fig.height=6}
+img <- readPNG(file.path(dir,"Figures","queens.png"))
+grid.raster(img)
+```
+
+\clearpage
+
+## Research your hashtags
+
+The first thing to do when you want to analyse a topic using Twitter's data is to know what is or are the most useful *hastag/s* that can describe your questions. This means those hastags that are most commonly used when what you are interested in is tweeted. In this example we are interested into the trends of [RuPaul's drag race Season 9](http://logosrupaulsdragrace.wikia.com/wiki/RuPaul%27s_Drag_Race_(Season_9)). A little bit of research through Twitter or Goggle is needed to define a set of good hastags. For example, we found a web page listing the top hashtags for RuPaul's drag race https://top-hashtags.com/hashtag/rupaul/. For simplicity we will limit our search to two hastags and we decided to use one specific for season 9, *#rpdr9*, and a more general one, *#rupaulsdragrace*. 
+
+## Initialize functions needed for the analyses
+
+First, start by installing and loading all the necessary packages.
+
+```{r eval = FALSE}
+# Packages that you need to setup your API in R and download twitter data
 install.packages("twitteR")
 install.packages("ROAuth")
 install.packages("RCurl")
 install.packages("RJSONIO")
+
+# Packages for sentiment analyses and wordclouds
 install.packages("RSentiment")
 install.packages("tm")
 install.packages("wordcloud")
 
+# Genral R packages for plotting and manipulating data
+install.packages("tidyr")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("plotly")
+```
 
+```{r message=FALSE}
+# Require all packages
 require("tm")
 require("wordcloud")
 require("twitteR")
@@ -55,103 +114,245 @@ require("RJSONIO")
 require("tidyr")
 require("dplyr")
 require("ggplot2")
-require("purrr")
-require("rvest")
-require("stringr")
+require("plotly")
+```
 
-api_key<-'oSPLosuWUQt2sdbS52senzYxA'
-api_secret<- "rRT36LxvFEkTdw0eTb4rh6sW5tnsZU0mph74dZAUShCyGjXRru"
-token <- "3108157034-Knm58WMZvymPlAAC4jhxTm2keWVHDx7XN9zCs2a"
-token_secret <- "YWHNeceXflljBNjUCW99hsrY1OPV8e7euWIFVTsrmjTmP"
+Then setup your *access keys* as below. If you don't remember where to find these codes see Figure\\label{fig:fig4}).
 
-setup_twitter_oauth(api_key, api_secret, token, token_secret)
+```{r eval = FALSE}
+api_key<-'yourAPIKey'
+api_secret<- "yourAPISecret"
+token <- "yourToken"
+token_secret <- "yourTokenSecret"
 
-dir <- "~/Documents/varie/Rladies/twitter_workshop"
+twitteR::setup_twitter_oauth(api_key, api_secret, token, token_secret)
+```
 
-# Start search
+## Start the search
 
-# 1 Type of search : website that Saskia found 
-# Search all the retweets from a tweet using it's ID found in the link
-# of the tweet
-# retweets(id, n = 20, ...)
+Twitter only allows you to retrieve tweets up to about two weeks before. Therefore, if you are planning to analyse some particular tweets across few weeks or months you will have to plan the downloading about every two weeks. For example, for this workshop we downloaded data on the 5th of May and on the 14th of May using the code below: 
 
-# twitter_rpdr9 <- searchTwitter("#rpdr9", n = 3000, lang= "en", since= "2017-03-01")
-# saveRDS(twitter_rpdr9, "~/twitter_rpdr9.rds")
+### Download the tweets
 
-twitter_rpdr9 <- readRDS("~/twitter_rpdr9.rds")
+```{r eval = FALSE}
+# Download only English tweets
+twittes_rpdr9 <- twitteR::searchTwitter("#rpdr9", n = 3000, lang= "en", since= "2017-03-01")
+# Convert the list to a data.frame
+toDF_rupol <- twitteR::twListToDF(twitter_rpdr9)
 
-# 
-toDF_rupol <- twListToDF(twitter_rpdr9)
+# Save data frame as an R object
+saveRDS(twitter_rpdr9, file.path(dir,"Data","twitter_rpdr9.rds")
+```
 
-toDF_rupol_time <- toDF_rupol %>% separate(created, into = c("Day","Time"), sep = " ") %>%
-					group_by(Day) %>% 
-					summarise(tweetsPerDay = length(text)) %>%
-					ggplot(aes(x = Day, y = tweetsPerDay)) + geom_bar(stat = "identity") + 
-					theme(axis.text.x = element_text(angle = 45, hjust = 1))
-toDF_rupol_time
+Now, read into R the two sets of tweets that we previously downloaded. 
 
-# 1.
-# What happened on the day with highest frequency?
-# peek day difference in hastag use
-# by range of time
+```{r }
+twitter_rpdr9_1 <- readRDS(file.path(dir,"Data","twitter_rpdr9.rds"))
+twitter_rpdr9_2 <- readRDS(file.path(dir,"Data","twitter_rpdr9_2.rds"))
+twitter_rpdr <- readRDS(file.path(dir,"Data","twitter_rupoldragrace.rds"))
+class(twitter_rpdr9_1)
 
+# Convert the lists to data.frames 
+toDF_rupol_1 <- twitteR::twListToDF(twitter_rpdr9_1)
+toDF_rupol_2 <- twitteR::twListToDF(twitter_rpdr9_2)
+toDF_rupol_3 <- twitteR::twListToDF(twitter_rpdr)
+```
 
-# 2. Get user information location
+Now we would lile to combine the two sets of tweets and remove overlapping tweets since there is overlap in the days.
 
-screen_names <- unique(as.character(toDF_rupol$screenName))
+```{r }
+# Time interval of the tweets dates 
+# Set 1
+min(toDF_rupol_1$created)
+max(toDF_rupol_1$created)
+# Set 2
+min(toDF_rupol_2$created)
+max(toDF_rupol_2$created)
+# Set 3
+min(toDF_rupol_3$created)
+max(toDF_rupol_3$created)
+# There is a two days overlap
 
-user_infos <- lookupUsers(screen_names, includeNA = TRUE)
-# saveRDS(user_infos, file.path(dir,"API1_user_infos.rds"))
-user_infos <- readRDS(file.path(dir,"API1_user_infos.rds"))
-user_infosToDF <- twListToDF(user_infos)
+# Combine the data.frame and remove duplicated tweets
+combineTweetsDupl <- rbind(toDF_rupol_1,toDF_rupol_2,toDF_rupol_3) 
+duplicatedRows <- duplicated(combineTweetsDupl)
+sum(duplicatedRows)
+combineTweets <- combineTweetsDupl[!duplicatedRows, ]
+sum(duplicated(combineTweets))
 
-########
-## Merge dataset
+head(combineTweets)
+```
 
-toDF_rupol_time <- toDF_rupol %>% separate(created, into = c("Day","Time"), sep = " ", remove = FALSE)
-combine_data <- merge(toDF_rupol_time[,c("screenName","text","Day","Time","retweetCount")],
+With the help of [tidyr](https://cran.r-project.org/web/packages/tidyr/index.html) we can reorganise and manipulate the dataset. For example, we can plot the number of tweets per day.
+
+```{r }
+toDF_rupol_daily <- combineTweets %>% tidyr::separate(created, into = c("Day","Time"), sep = " ") %>%
+			dplyr::group_by(Day) %>% 
+			dplyr::summarise(tweetsPerDay = length(text)) %>%
+			ggplot(aes(x = Day, y = tweetsPerDay)) + 
+      geom_bar(stat = "identity", fill = "#88398A") + theme_bw() +
+			theme(axis.text.x = element_text(angle = 45, hjust = 1)) + coord_flip()
+toDF_rupol_daily
+```
+
+April 29th is the first day of our sets of tweets with a higher frequency of tweets and indeed it corresponds to RuPaul's Drag Race Episode 6 which in America was the night of April 28th (for the list of all the episodes see [RuPaul's Wikia](http://logosrupaulsdragrace.wikia.com/wiki/RuPaul%27s_Drag_Race_(Season_9))). The same thing apply for May 6th. You could also stratify every day by time and check at which time the highest number tweets was written. This is not going to be addressed here but for examples on how to deal with dates and times in R you can look at this tutorial from Berkeley https://www.stat.berkeley.edu/~s133/dates.html. 
+
+### User's information
+
+Another functionlaity of *tweetR* is to download the information about the users that wrote the the tweets. This can be done with the functions *getUser()* and for multiple lookups with *lookupUsers()* and . Of course, you are able to access user's information according to the user's permission. Therefore, you normally expect a lot of missing or fake data! The search can be done by providing on of *screenNames* or *userIDs*.
+
+```{r }
+head(combineTweets[,c("id","screenName")])
+# Create list of screenNames to look up for
+screen_names <- unique(as.character(combineTweets$screenName))
+```
+
+There is a cap in the number of users that can be looked up in one go. The maximum is capped at 100 as stated on the [Twitter Developer Documentation](https://dev.twitter.com/rest/reference/get/users/lookup). Therefore, we need to look up *screen_names* in blocks and then combine the results.
+
+```{r eval = FALSE}
+block_size <- round(seq(1,length(screen_names), length.out = 50))
+# Size of the blocks
+diff(block_size)
+
+# Create list of screen names
+screen_names_blocks <- list()
+for(i in 1:(length(block_size)-1)){
+  start <- ifelse(block_size[i] == 1, 1, block_size[i] + 1)
+  end <-block_size[i+1]
+  screen_names_blocks[[i]] <- screen_names[start:end]
+}
+
+# Wrapper for lookupUsers
+getUser_wrapper <- function(name_block){
+  user_infos <- twitteR::lookupUsers(name_block, includeNA = FALSE)
+  user_infosToDF <- twitteR::twListToDF(user_infos)
+  return(user_infosToDF)
+}
+
+user_infos_list <- lapply(screen_names_blocks, function(x) getUser_wrapper(x))
+user_infosDF <- do.call(rbind, user_infos_list)
+
+saveRDS(user_infosDF, file.path(dir,"Data","Users_infos.rds"))
+```
+
+Now we can merge tweets with user information.
+
+```{r eval = FALSE}
+user_infosDF <- readRDS(file.path(dir,"Data","Users_infos.rds"))
+
+toDF_rupol_time <- combineTweets %>% tidyr::separate(created, into = c("Day","Time"), sep = " ", remove = FALSE)
+combine_data <- merge(toDF_rupol_time[,c("screenName","text","Day","Time","retweetCount","isRetweet","retweeted")],
 	user_infosToDF[,c("screenName","description","followersCount","friendsCount","location")], all.x = TRUE, all.y = TRUE)
+combine_data <- combine_data[!duplicated(combine_data),]
 
+write.csv(combine_data, file.path(dir,"Data","Users_infos_and_tweets.csv"), row.names = FALSE)
+```
 
-########
-# 3. mention of a queen per day - real name - queen name 
-queens <- read.csv(file.path(dir,"queens_name.csv"))
-queens <- queens %>% separate(Queen.Name, into = c("Queen1","Queen2","Queen3"), sep = " ", remove = FALSE) %>%
-				separate(Real.Name, into = c("Real1","Real2"), remove = FALSE)
+## Some analysis
 
+### How many times is a drag queen mentioned daily?
+
+Now that we have combined the tweets and the user's information we can start with some analyses. For example, how many times was each queen mentioned daily? Of course, each mention could have a positive or negative connotation but nonetheless this would tell us about the overall popularity of the queen.
+
+First, let's load the data where we saved the queen names and their twitter screen name:
+
+```{r }
+queens <- read.csv(file.path(dir,"Data","queens_name.csv"))
+head(queens)
+```
+
+We are going to do the search through the *grep* function and for every queen we need a unique vector of names. This is because a queen can be mentioned via her twitter name, her queen name or even her real name. For simplicity and to avoi overlap between queens we will perform the search using their drag queen names and their twitter names. 
+
+```{r}
+combine_data <- read.csv(file.path(dir,"Data","Users_infos_and_tweets.csv"), stringsAsFactors = FALSE)
+
+# Separate their queen name into their components
+queens <- queens %>% 
+  tidyr::separate(Queen.Name, into = c("Queen1","Queen2","Queen3"), sep = " ", remove = FALSE)
+head(queens[,c("Queen1","Queen2","Queen3")])
+
+# Wrapper function that creates a vector of key names for every queen
 queen_vector <- function(x){
 	vec <- c(x[c("Queen1","Queen2","Queen3","Twitter.Name")])
 	vec <- vec[!is.na(vec)]
 }
 
+# List containing the vectors for every queen
 queens_vecs <- apply(queens, 1,queen_vector)
-queens_vec_grepReady <- lapply(queens_vecs, function(x) paste0(x, collapse = "|"))
+queens_grepKey_prepare <- lapply(queens_vecs, function(x) paste0(x, collapse = "|"))
 
-grep_queens <- lapply(queens_vec_grepReady, function(x) grep(x,combine_data$text))
+# Set the encoding of the tweets as latin to avoid issues with for example emoji
+Encoding(combine_data$text) <- "latin1"
+grep_queens <- lapply(queens_grepKey_prepare, function(x) grep(x,combine_data$text))
 names(grep_queens) <- queens$Twitter.Name
+# Index referring to the raw in combine_data where a queen was mentioned
+head(grep_queens[[1]])
 
-# frequency of tweets per queen
+# Frequency of tweets per queen
+# 1. Exctract rows where a queen was mentioned and extract only columns that we need for this analysis
 freq_mention_Day <- lapply(grep_queens, function(x){
-	mention_data <- combine_data[x,c("Day","Time","text","location","followersCount","friendsCount")]
+	mention_data <- combine_data[x,c("Day","Time","text","location","followersCount","friendsCount","retweetCount", "isRetweet", "retweeted")]
 })
+# 2. Combine mention for every queen into a data.frame 
 freq_mention_DayToDF <- do.call(rbind,freq_mention_Day)
-len_mention <- sapply(freq_mention_Day,function(x) nrow(x))
-freq_mention_DayToDF$queen_name <- rep(names(freq_mention_Day), times = len_mention)
+# 3. Creat a column $queen_name which will tell us whose queen the tweet belongs to
+number_mention <- sapply(freq_mention_Day,function(x) nrow(x))
+freq_mention_DayToDF$queen_name <- rep(names(freq_mention_Day), times = number_mention)
+```
 
-freq_mention_DayToDF %>% group_by(Day, queen_name) %>% summarise(Nmention = length(text)) %>%
-ggplot(aes(x = queen_name, y = Nmention, fill = Day), colour = "white") + 
-geom_bar(stat = "identity", position = "stack")+ coord_flip()
+Now we can plot the number of time a queen was mentioned in a tweet every day.
 
-############
-# word cloud
-############
+```{r}
+dailyMention <- freq_mention_DayToDF %>% dplyr::group_by(Day, queen_name) %>% 
+  dplyr::summarise(Nmention = length(text)) %>%
+  ggplot(aes(x = Day, y = Nmention, colour = queen_name, group = queen_name)) + 
+  geom_line() + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  geom_vline(xintercept= c(4,11,18), linetype = "dotted")
+dailyMention
+# ggplotly(dailyMention) 
 
-Encoding(freq_mention_DayToDF$text) <- "latin1"
-mach_corpus = Corpus(VectorSource(freq_mention_DayToDF$text[freq_mention_DayToDF$queen_name=="@atlsexyslim"]))
+# Episodes in America
+# Airdate: April 28, 2017 (29th in AU)
+# Airdate: May 5th 2017 (6th in AU)
+# Airdate: May 12th 2017 (13th in AU)
+```
 
-tdm = TermDocumentMatrix(mach_corpus,
+### How come @atlsexyxlim has such huge number of tweets?
+
+The answer is in the retweets!
+
+```{r}
+retweets <- freq_mention_DayToDF %>% dplyr::group_by(Day, queen_name) %>%
+  dplyr::summarise(NUniqueTweet = length(unique(text)), Nretweet = sum(isRetweet)) %>%
+  ggplot(aes(x = NUniqueTweet, y = Nretweet, colour = queen_name)) + geom_point() + theme_bw()
+retweets
+# ggplotly(retweets)
+
+atlslim <- subset(freq_mention_DayToDF, queen_name %in% "@atlsexyslim")
+```
+
+### What are the most common words used in @atlsexyslim tweets? 
+
+To answer this question we will generate a word cloud using @atlsexyslim tweets. At the beginning of this tutorial there is the list functions needed for this step. 
+
+```{r}
+some_txt <- freq_mention_DayToDF$text[freq_mention_DayToDF$queen_name=="@atlsexyslim"]
+# Clean text
+# remove punctuation
+some_txt = gsub("[[:punct:]]", "", some_txt)
+# remove numbers
+some_txt = gsub("[[:digit:]]", "", some_txt)
+# remove html links
+some_txt = gsub("http\\w+", "", some_txt)
+# remove unnecessary spaces
+some_txt = gsub("[ \t]{2,}", "", some_txt)
+some_txt = gsub("^\\s+|\\s+$", "", some_txt)
+
+mach_corpus = tm::Corpus(tm::VectorSource(some_txt))
+
+tdm = tm::TermDocumentMatrix(mach_corpus,
                     control = list(removePunctuation = TRUE,
-        stopwords = c("machine", "learning", stopwords("english")),
+        stopwords = c("machine", "learning", tm::stopwords("english")),
         removeNumbers = TRUE, tolower = TRUE))   
    
 # define tdm as matrix
@@ -159,18 +360,34 @@ dm = as.matrix(tdm)
 # get word counts in decreasing order
 word_freqs = sort(rowSums(dm), decreasing=TRUE) 
 # create a data frame with words and their frequencies
-dm = data.frame(word=names(word_freqs), freq=word_freqs)
-dm <- dm[-(1:5),]
+dm = data.frame(word=names(word_freqs), freq = word_freqs)
+```
 
-wordcloud(dm$word, dm$freq, random.order=FALSE, colors=brewer.pal(8, "Dark2"))
+Before plotting the word cloud it is always useful to check and maybe remove the first few words of the list which are probably going to be excpected words, like the hastags that we used for the search. 
+
+```{r}
+head(dm)
+dm <- dm[-(1:5),]
+# Plot the word cloud
+wordcloud::wordcloud(dm$word, dm$freq, random.order=FALSE, max.words = 100, colors=brewer.pal(8, "Dark2"))
+```
+
+\clearpage
 
 ### Sentiment analysis
-# 4. sentiment analysis good or bad
 
-some_txt <- freq_mention_DayToDF$text
+Sentiment analysis is defined as the process to computationally classify opinions from a text. Piece of text are sequences of qualitative information that can be seen as unstructured data. Sentiment analysis aims to classify the positivity or negativity of each sentence so that the results could be used quantitatively. To perform the following analysis we will use the package [RSentiment](https://cran.r-project.org/web/packages/RSentiment/vignettes/Introduction.html). 
+
+```{r}
+# Extract tweets and store them into a character vector with a unique ID
 freq_mention_DayToDF$uniqueID <- rownames(freq_mention_DayToDF)
-names(some_txt) <- freq_mention_DayToDF$uniqueID 
+some_txt <- freq_mention_DayToDF$text
+names(some_txt) <- freq_mention_DayToDF$uniqueID
+```
 
+Before we can process the data with *RSentiment* a set of data cleaning are necessary. Below is the list of the most important ones. 
+
+```{r}
 # remove retweet entities
 some_txt = gsub("(RT|via)((?:\\b\\W*@\\w+)+)", "", some_txt)
 # remove at people
@@ -185,6 +402,7 @@ some_txt = gsub("http\\w+", "", some_txt)
 some_txt = gsub("[ \t]{2,}", "", some_txt)
 some_txt = gsub("^\\s+|\\s+$", "", some_txt)
 
+# convert every word to lower case
 # define "tolower error handling" function 
 try.error = function(x)
 {
@@ -206,35 +424,19 @@ some_txt = some_txt[!is.na(some_txt)]
 names(some_txt) = NULL
 some_txt <- gsub("\n","",some_txt)
 
-#Encoding(some_txt) <- "latin1"
-emotion <- calculate_sentiment(some_txt)
-emotion$uniqueID <- names(some_txt)
+```
 
+Now that the text is clean we can run the sentiment analysis with the *calculate_sentiment()* function!
+
+```{r eval = FALSE}
+emotion <- RSentiment::calculate_sentiment(some_txt)
+emotion$uniqueID <- names(some_txt)
 combine_sentiment <- cbind(freq_mention_DayToDF,emotion)
 
 ggplot(combine_sentiment, aes(x = queen_name, fill = sentiment)) + 
 geom_bar(stat = "count", position = "fill") + coord_flip()
-
-# Day of the episode + 1
-
-
-#### Location
-install.packages("maps")
-library(maps)
-data(world.cities)
-
 ```
 
+\clearpage
 
-
-
-
-
-
-
-
-
-
-
-
-
+### Which other question can be asked?
