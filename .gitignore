@@ -3,4 +3,3 @@
 speakers/*
 download_data.R
 .DS_Store
-Data/*.rds
