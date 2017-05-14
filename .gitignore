@@ -3,8 +3,4 @@
 speakers/*
 download_data.R
 .DS_Store
-.git
-./Data/twitter_rpdr9_2.rds
-./Data/twitter_rpdr9.rds
-./Data/twitter_rupoldragrace.rds
-./Data/Users_infos.rds
+Data/*.rds
