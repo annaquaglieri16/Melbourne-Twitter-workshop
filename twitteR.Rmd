@@ -1,0 +1,240 @@
+---
+title: "R-Ladies Melbourne - Twitter"
+author: "Anna Qualieri & Saskia Freitag"
+date: <`r format(Sys.time(), "%d %B, %Y")`>
+output:
+  html_document:
+    toc: yes
+    toc_depth: '4'
+  pdf_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    highlight: tango
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+---
+
+
+```{r echo = FALSE}
+# Chunk options
+knitr::opts_chunk$set(fig.width=8, fig.height=6, echo=T, warning=FALSE, message=FALSE,prompt=T,tidy=T,include=TRUE,cache=FALSE)
+
+dir <- "~/Documents/varie/Combine_tutorial"
+
+```
+
+# Set up a twitter API to get started with twitter
+
+Before you can download data from Twitter's data you need to setup your API. First sign up [here](https://dev.twitter.com/resources/signup). Then ... to be continued - maybe some screenshots
+
+```{r}
+
+# rupols hastags
+
+https://top-hashtags.com/hashtag/rupaul/
+
+# twitter setup
+install.packages("twitteR")
+install.packages("ROAuth")
+install.packages("RCurl")
+install.packages("RJSONIO")
+install.packages("RSentiment")
+install.packages("tm")
+install.packages("wordcloud")
+
+
+require("tm")
+require("wordcloud")
+require("twitteR")
+require("RSentiment")
+require("ROAuth")
+require("RCurl")
+require("RJSONIO")
+require("tidyr")
+require("dplyr")
+require("ggplot2")
+require("purrr")
+require("rvest")
+require("stringr")
+
+api_key<-'oSPLosuWUQt2sdbS52senzYxA'
+api_secret<- "rRT36LxvFEkTdw0eTb4rh6sW5tnsZU0mph74dZAUShCyGjXRru"
+token <- "3108157034-Knm58WMZvymPlAAC4jhxTm2keWVHDx7XN9zCs2a"
+token_secret <- "YWHNeceXflljBNjUCW99hsrY1OPV8e7euWIFVTsrmjTmP"
+
+setup_twitter_oauth(api_key, api_secret, token, token_secret)
+
+dir <- "~/Documents/varie/Rladies/twitter_workshop"
+
+# Start search
+
+# 1 Type of search : website that Saskia found 
+# Search all the retweets from a tweet using it's ID found in the link
+# of the tweet
+# retweets(id, n = 20, ...)
+
+# twitter_rpdr9 <- searchTwitter("#rpdr9", n = 3000, lang= "en", since= "2017-03-01")
+# saveRDS(twitter_rpdr9, "~/twitter_rpdr9.rds")
+
+twitter_rpdr9 <- readRDS("~/twitter_rpdr9.rds")
+
+# 
+toDF_rupol <- twListToDF(twitter_rpdr9)
+
+toDF_rupol_time <- toDF_rupol %>% separate(created, into = c("Day","Time"), sep = " ") %>%
+					group_by(Day) %>% 
+					summarise(tweetsPerDay = length(text)) %>%
+					ggplot(aes(x = Day, y = tweetsPerDay)) + geom_bar(stat = "identity") + 
+					theme(axis.text.x = element_text(angle = 45, hjust = 1))
+toDF_rupol_time
+
+# 1.
+# What happened on the day with highest frequency?
+# peek day difference in hastag use
+# by range of time
+
+
+# 2. Get user information location
+
+screen_names <- unique(as.character(toDF_rupol$screenName))
+
+user_infos <- lookupUsers(screen_names, includeNA = TRUE)
+# saveRDS(user_infos, file.path(dir,"API1_user_infos.rds"))
+user_infos <- readRDS(file.path(dir,"API1_user_infos.rds"))
+user_infosToDF <- twListToDF(user_infos)
+
+########
+## Merge dataset
+
+toDF_rupol_time <- toDF_rupol %>% separate(created, into = c("Day","Time"), sep = " ", remove = FALSE)
+combine_data <- merge(toDF_rupol_time[,c("screenName","text","Day","Time","retweetCount")],
+	user_infosToDF[,c("screenName","description","followersCount","friendsCount","location")], all.x = TRUE, all.y = TRUE)
+
+
+########
+# 3. mention of a queen per day - real name - queen name 
+queens <- read.csv(file.path(dir,"queens_name.csv"))
+queens <- queens %>% separate(Queen.Name, into = c("Queen1","Queen2","Queen3"), sep = " ", remove = FALSE) %>%
+				separate(Real.Name, into = c("Real1","Real2"), remove = FALSE)
+
+queen_vector <- function(x){
+	vec <- c(x[c("Queen1","Queen2","Queen3","Twitter.Name")])
+	vec <- vec[!is.na(vec)]
+}
+
+queens_vecs <- apply(queens, 1,queen_vector)
+queens_vec_grepReady <- lapply(queens_vecs, function(x) paste0(x, collapse = "|"))
+
+grep_queens <- lapply(queens_vec_grepReady, function(x) grep(x,combine_data$text))
+names(grep_queens) <- queens$Twitter.Name
+
+# frequency of tweets per queen
+freq_mention_Day <- lapply(grep_queens, function(x){
+	mention_data <- combine_data[x,c("Day","Time","text","location","followersCount","friendsCount")]
+})
+freq_mention_DayToDF <- do.call(rbind,freq_mention_Day)
+len_mention <- sapply(freq_mention_Day,function(x) nrow(x))
+freq_mention_DayToDF$queen_name <- rep(names(freq_mention_Day), times = len_mention)
+
+freq_mention_DayToDF %>% group_by(Day, queen_name) %>% summarise(Nmention = length(text)) %>%
+ggplot(aes(x = queen_name, y = Nmention, fill = Day), colour = "white") + 
+geom_bar(stat = "identity", position = "stack")+ coord_flip()
+
+############
+# word cloud
+############
+
+Encoding(freq_mention_DayToDF$text) <- "latin1"
+mach_corpus = Corpus(VectorSource(freq_mention_DayToDF$text[freq_mention_DayToDF$queen_name=="@atlsexyslim"]))
+
+tdm = TermDocumentMatrix(mach_corpus,
+                    control = list(removePunctuation = TRUE,
+        stopwords = c("machine", "learning", stopwords("english")),
+        removeNumbers = TRUE, tolower = TRUE))   
+   
+# define tdm as matrix
+dm = as.matrix(tdm)
+# get word counts in decreasing order
+word_freqs = sort(rowSums(dm), decreasing=TRUE) 
+# create a data frame with words and their frequencies
+dm = data.frame(word=names(word_freqs), freq=word_freqs)
+dm <- dm[-(1:5),]
+
+wordcloud(dm$word, dm$freq, random.order=FALSE, colors=brewer.pal(8, "Dark2"))
+
+### Sentiment analysis
+# 4. sentiment analysis good or bad
+
+some_txt <- freq_mention_DayToDF$text
+freq_mention_DayToDF$uniqueID <- rownames(freq_mention_DayToDF)
+names(some_txt) <- freq_mention_DayToDF$uniqueID 
+
+# remove retweet entities
+some_txt = gsub("(RT|via)((?:\\b\\W*@\\w+)+)", "", some_txt)
+# remove at people
+some_txt = gsub("@\\w+", "", some_txt)
+# remove punctuation
+some_txt = gsub("[[:punct:]]", "", some_txt)
+# remove numbers
+some_txt = gsub("[[:digit:]]", "", some_txt)
+# remove html links
+some_txt = gsub("http\\w+", "", some_txt)
+# remove unnecessary spaces
+some_txt = gsub("[ \t]{2,}", "", some_txt)
+some_txt = gsub("^\\s+|\\s+$", "", some_txt)
+
+# define "tolower error handling" function 
+try.error = function(x)
+{
+  # create missing value
+  y = NA
+  # tryCatch error
+  try_error = tryCatch(tolower(x), error=function(e) e)
+  # if not an error
+  if (!inherits(try_error, "error"))
+    y = tolower(x)
+  # result
+  return(y)
+}
+# lower case using try.error with sapply 
+some_txt = sapply(some_txt, try.error)
+
+# remove NAs in some_txt
+some_txt = some_txt[!is.na(some_txt)]
+names(some_txt) = NULL
+some_txt <- gsub("\n","",some_txt)
+
+#Encoding(some_txt) <- "latin1"
+emotion <- calculate_sentiment(some_txt)
+emotion$uniqueID <- names(some_txt)
+
+combine_sentiment <- cbind(freq_mention_DayToDF,emotion)
+
+ggplot(combine_sentiment, aes(x = queen_name, fill = sentiment)) + 
+geom_bar(stat = "count", position = "fill") + coord_flip()
+
+# Day of the episode + 1
+
+
+#### Location
+install.packages("maps")
+library(maps)
+data(world.cities)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
