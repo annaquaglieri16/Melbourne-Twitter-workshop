@@ -1,5 +1,7 @@
 .
 ..
+twitteR.knit.md
 speakers/*
 download_data.R
 .DS_Store
+ignore/*
