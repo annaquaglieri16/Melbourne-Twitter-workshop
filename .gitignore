@@ -2,7 +2,7 @@
 ..
 speakers/*
 download_data.R
-twitter.html
+twitteR.html
 .gitignore
 .config.yml
 .DS_Store
