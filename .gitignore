@@ -1,8 +1,9 @@
 .
 ..
-twitteR.knit.md
 speakers/*
 twitteR_cache/*
 download_data.R
+twitter.html
+.gitignore
+.config.yml
 .DS_Store
-ignore/*
