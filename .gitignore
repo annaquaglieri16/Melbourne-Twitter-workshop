@@ -1,7 +1,6 @@
 .
 ..
 speakers/*
-twitteR_cache/*
 download_data.R
 twitter.html
 .gitignore
