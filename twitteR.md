@@ -23,19 +23,27 @@ Before you can download data from Twitter, you need to setup your API by becomin
 
 ------------------------------------------------------------------------
 
-![Figure 1](/Users/quaglieri.a/Documents/varie/Rladies/twitter_workshop/Figures/signup1.png) **Figure 1**
+![Figure 1](twitteR_files/figure-markdown_github/unnamed-chunk-2-1.png)
+
+**Figure 1**
 
 ------------------------------------------------------------------------
 
-![Figure 2](/Users/quaglieri.a/Documents/varie/Rladies/twitter_workshop/Figures/signup2.png) **Figure 2**
+![Figure 2](twitteR_files/figure-markdown_github/unnamed-chunk-3-1.png)
+
+**Figure 2**
 
 ------------------------------------------------------------------------
 
-![Figure 3](/Users/quaglieri.a/Documents/varie/Rladies/twitter_workshop/Figures/twitter_apps.png) **Figure 3**
+![Figure 3](twitteR_files/figure-markdown_github/unnamed-chunk-4-1.png)
+
+**Figure 3**
 
 ------------------------------------------------------------------------
 
-![Figure 4](/Users/quaglieri.a/Documents/varie/Rladies/twitter_workshop/Figures/APIs_tokens.png) **Figure 4**
+![Figure 4](twitteR_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+**Figure 4**
 
 ------------------------------------------------------------------------
 
@@ -46,7 +54,9 @@ RuPaul's drag race is an American reality competitions showing RuPaul's search f
 
 ------------------------------------------------------------------------
 
-![Figure 5](/Users/quaglieri.a/Documents/varie/Rladies/twitter_workshop/Figures/queens.png) **Figure 5**
+![Figure 5](twitteR_files/figure-markdown_github/unnamed-chunk-6-1.png)
+
+**Figure 5**
 
 ------------------------------------------------------------------------
 
@@ -244,7 +254,7 @@ With the help of [tidyr](https://cran.r-project.org/web/packages/tidyr/index.htm
 > toDF_rupol_daily
 ```
 
-![Total number of tweets per day](twitteR_files/figure-markdown_github/unnamed-chunk-8-1.png)
+![Total number of tweets per day](twitteR_files/figure-markdown_github/unnamed-chunk-13-1.png)
 
 April 29th is the first day of our sets of tweets with a higher frequency of tweets and indeed it corresponds to RuPaul's Drag Race Episode 6 which in America was the night of April 28th (for the list of all the episodes see [RuPaul's Wikia](http://logosrupaulsdragrace.wikia.com/wiki/RuPaul%27s_Drag_Race_(Season_9))). The same thing apply for May 6th. You could also stratify every day by time and check at which time the highest number tweets was written. This is not going to be addressed here but for examples on how to deal with dates and times in R you can look at this tutorial from Berkeley <https://www.stat.berkeley.edu/~s133/dates.html>.
 
@@ -437,7 +447,7 @@ Now we can plot the number of time a queen was mentioned in a tweet every day.
 > dailyMention
 ```
 
-![Total number of times that a queen was mentioned in a tweet.](twitteR_files/figure-markdown_github/unnamed-chunk-14-1.png)
+![Total number of times that a queen was mentioned in a tweet.](twitteR_files/figure-markdown_github/unnamed-chunk-19-1.png)
 
 ``` r
 > # ggplotly(dailyMention)
@@ -455,7 +465,7 @@ Now we can plot the number of time a queen was mentioned in a tweet every day.
 > dailyMention
 ```
 
-![Unique tweets per queen per day.](twitteR_files/figure-markdown_github/unnamed-chunk-15-1.png)
+![Unique tweets per queen per day.](twitteR_files/figure-markdown_github/unnamed-chunk-20-1.png)
 
 ``` r
 > # ggplotly(dailyMention)
@@ -479,7 +489,7 @@ The answer is in the retweets!
 > retweets
 ```
 
-![Number of retweets by number of unique tweets where a queen was mentioned per day.](twitteR_files/figure-markdown_github/unnamed-chunk-16-1.png)
+![Number of retweets by number of unique tweets where a queen was mentioned per day.](twitteR_files/figure-markdown_github/unnamed-chunk-21-1.png)
 
 ``` r
 > # ggplotly(retweets)
@@ -552,7 +562,7 @@ Before plotting the wordcloud it is always useful to check and maybe remove the 
 +     max.words = 100, colors = brewer.pal(8, "Dark2"))
 ```
 
-![Wordcloud of the top 100 words for the tweets where @atlsexyxlim was mentioned.](twitteR_files/figure-markdown_github/unnamed-chunk-18-1.png)
+![Wordcloud of the top 100 words for the tweets where @atlsexyxlim was mentioned.](twitteR_files/figure-markdown_github/unnamed-chunk-23-1.png)
 
 ### Sentiment analysis
 
@@ -643,4 +653,10 @@ Now that the text is clean we can run the sentiment analysis with the `calculate
 +     geom_bar(stat = "count", position = "fill") + coord_flip()
 ```
 
-![](twitteR_files/figure-markdown_github/unnamed-chunk-21-1.png)
+![](twitteR_files/figure-markdown_github/unnamed-chunk-26-1.png)
+
+``` r
+> # extract R code
+> knitr::purl(file.path(dir, "twitteR.Rmd"), output = file.path(dir, 
++     "twitteR.R"), documentation = 2)
+```
