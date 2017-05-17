@@ -3,10 +3,10 @@ title: "R-Ladies Melbourne - Twitter Workshop"
 author: "Anna Quaglieri & Saskia Freytag"
 date: "15th May 2017"
 output:
-  html_document:
+  github_document:
     toc: yes
     toc_depth: 3
-  github_document:
+  html_document:
     toc: yes
     toc_depth: 3
 linkcolor: magenta
